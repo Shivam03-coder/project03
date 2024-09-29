@@ -1,0 +1,41 @@
+{
+  "name": "auth",
+  "version": "1.0.0",
+  "description": "Node Auth",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "build": "npm i"
+  },
+  "keywords": [
+    "Node",
+    "JS"
+  ],
+  "author": "Shivam anand",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "cashfree-pg": "^4.2.3",
+    "cookie": "^0.6.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.7.0",
+    "mongoose": "^8.4.3",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "paypal-rest-sdk": "^1.8.1",
+    "razorpay": "^2.9.4",
+    "stripe": "^16.12.0"
+  }
+}
