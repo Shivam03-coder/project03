@@ -1,51 +1,64 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { load } from "@cashfreepayments/cashfree-js";
-import StudentDetails from "../shared/context/StudentDetails";
 
 const studentData = {
   name: "John Doe",
   id: "ST123456",
-  feesRemaining: 500, // Assuming this is the remaining fees
+  feesRemaining: 500, 
 };
 
 const StudentPage = () => {
   const [orderId, setOrderId] = useState("");
-  let cashfree;
+  const [cashfree, setCashfree] = useState(null);
 
   const initializeSDK = async () => {
     try {
-      cashfree = await load({
-        mode: "sandbox", // Set mode to 'sandbox' or 'production'
+      const cashfreeInstance = await load({
+        mode: "sandbox",
       });
+      setCashfree(cashfreeInstance);
     } catch (error) {
       console.error("Error initializing Cashfree SDK:", error);
+      alert("Failed to initialize payment. Please try again.");
     }
   };
 
   const getSessionId = async () => {
     try {
-      let res = await axios.get(`${import.meta.env.VITE_BACKEND_BASE_URL}/paymnet`);
+      let res = await axios.post(
+        `${import.meta.env.VITE_BACKEND_BASE_URL}/payment`
+      );
       if (res.data && res.data.payment_session_id) {
-        console.log(res.data);
+        console.log("Session ID:", res.data);
         setOrderId(res.data.order_id);
         return res.data.payment_session_id;
+      } else {
+        throw new Error("Failed to fetch session ID.");
       }
     } catch (error) {
       console.log("Error fetching session ID:", error);
+      alert("Failed to start payment session. Please try again.");
+      return null;
     }
   };
 
   const verifyPayment = async () => {
     try {
-      let res = await axios.post(`${import.meta.env.VITE_BACKEND_BASE_URL}/verify`, {
-        orderId: orderId,
-      });
+      let res = await axios.post(
+        `${import.meta.env.VITE_BACKEND_BASE_URL}/verify`,
+        {
+          orderId,
+        }
+      );
       if (res && res.data) {
         alert("Payment verified successfully!");
+      } else {
+        throw new Error("Payment verification failed.");
       }
     } catch (error) {
       console.log("Error verifying payment:", error);
+      alert("Payment verification failed. Please try again.");
     }
   };
 
@@ -55,6 +68,10 @@ const StudentPage = () => {
       await initializeSDK();
       let sessionId = await getSessionId();
 
+      if (!cashfree || !sessionId) {
+        throw new Error("Payment initialization failed.");
+      }
+
       let checkoutOptions = {
         paymentSessionId: sessionId,
         redirectTarget: "_modal",
@@ -62,15 +79,15 @@ const StudentPage = () => {
 
       cashfree.checkout(checkoutOptions).then((res) => {
         console.log("Payment initialized");
-        verifyPayment(orderId);
+        verifyPayment();
       });
     } catch (error) {
       console.log("Payment error:", error);
+      alert("An error occurred during payment. Please try again.");
     }
   };
 
   return (
-    <>
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="bg-white shadow-lg rounded-lg p-8 max-w-sm">
         <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">
@@ -78,7 +95,10 @@ const StudentPage = () => {
         </h1>
         <div className="card text-center">
           <p className="text-lg text-gray-600 mb-6">
-            Remaining Fees: <span className="font-semibold text-gray-800">${studentData.feesRemaining}</span>
+            Remaining Fees:{" "}
+            <span className="font-semibold text-gray-800">
+              ${studentData.feesRemaining}
+            </span>
           </p>
           <button
             onClick={handlePaymentClick}
@@ -89,8 +109,6 @@ const StudentPage = () => {
         </div>
       </div>
     </div>
-  </>
-  
   );
 };
 
